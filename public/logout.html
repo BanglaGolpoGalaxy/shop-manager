@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Logging out...</title>
+  <style>
+    body { font-family:'Segoe UI',sans-serif; display:flex; align-items:center; justify-content:center; min-height:100vh; background:#1e3a8a; color:#fff; text-align:center; }
+    .box { background:rgba(255,255,255,0.1); padding:40px; border-radius:20px; }
+    h1 { margin-bottom:8px; }
+    p { opacity:0.8; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>👋 Logging out...</h1>
+    <p>You will be redirected shortly.</p>
+  </div>
+  <script>
+    localStorage.removeItem('token');
+    setTimeout(() => { window.location.href = 'login.html'; }, 1500);
+  </script>
+</body>
+</html>

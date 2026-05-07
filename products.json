@@ -1,0 +1,128 @@
+[
+  {
+    "id": 1,
+    "name": "Rice (Coarse)",
+    "category": "Grain",
+    "variant": "1 kg",
+    "price": 55,
+    "stock": 100,
+    "unit": "kg"
+  },
+  {
+    "id": 2,
+    "name": "Red Lentils",
+    "category": "Pulse",
+    "variant": "1 kg",
+    "price": 120,
+    "stock": 40,
+    "unit": "kg"
+  },
+  {
+    "id": 3,
+    "name": "Soybean Oil",
+    "category": "Oil",
+    "variant": "1L Bottle",
+    "price": 175,
+    "stock": 25,
+    "unit": "bottle"
+  },
+  {
+    "id": 4,
+    "name": "Soybean Oil",
+    "category": "Oil",
+    "variant": "5L Jar",
+    "price": 800,
+    "stock": 10,
+    "unit": "jar"
+  },
+  {
+    "id": 5,
+    "name": "Mustard Oil",
+    "category": "Oil",
+    "variant": "1L Bottle",
+    "price": 190,
+    "stock": 13,
+    "unit": "bottle"
+  },
+  {
+    "id": 6,
+    "name": "Sugar",
+    "category": "Grocery",
+    "variant": "1 kg",
+    "price": 90,
+    "stock": 59,
+    "unit": "kg"
+  },
+  {
+    "id": 7,
+    "name": "Salt (Packet)",
+    "category": "Grocery",
+    "variant": "1 kg",
+    "price": 25,
+    "stock": 150,
+    "unit": "pack"
+  },
+  {
+    "id": 8,
+    "name": "Flour",
+    "category": "Grain",
+    "variant": "2 kg",
+    "price": 85,
+    "stock": 30,
+    "unit": "pack"
+  },
+  {
+    "id": 9,
+    "name": "Soap (Lux)",
+    "category": "Toiletry",
+    "variant": "75g",
+    "price": 35,
+    "stock": 78,
+    "unit": "pcs"
+  },
+  {
+    "id": 10,
+    "name": "Soap (Lux)",
+    "category": "Toiletry",
+    "variant": "150g",
+    "price": 60,
+    "stock": 47,
+    "unit": "pcs"
+  },
+  {
+    "id": 11,
+    "name": "Soap (Lifebuoy)",
+    "category": "Toiletry",
+    "variant": "125g",
+    "price": 40,
+    "stock": 60,
+    "unit": "pcs"
+  },
+  {
+    "id": 12,
+    "name": "Tea Leaves",
+    "category": "Beverage",
+    "variant": "250g",
+    "price": 95,
+    "stock": 20,
+    "unit": "pack"
+  },
+  {
+    "name": "Dabour Honey",
+    "category": "Grocery",
+    "variant": "400 gm",
+    "price": 250,
+    "stock": 85,
+    "id": 13,
+    "unit": ""
+  },
+  {
+    "name": "Dabour Honey",
+    "category": "Grocery",
+    "variant": "1200 gm",
+    "price": 700,
+    "stock": 40,
+    "id": 14,
+    "unit": ""
+  }
+]

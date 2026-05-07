@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🖨️ Print QR Codes | Shop Manager</title>
+  <style>
+    :root {
+      --bg: #f1f5f9; --surface: #ffffff; --text: #1e293b; --accent: #3b82f6;
+    }
+    body.dark {
+      --bg: #0f172a; --surface: #1e293b; --text: #e2e8f0;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Segoe UI', sans-serif; background:var(--bg); color:var(--text); min-height:100vh; transition:0.3s; }
+
+    .topbar {
+      background: linear-gradient(135deg, #1e40af, #1e3a8a); color:#fff;
+      padding:14px 24px; display:flex; justify-content:space-between;
+      align-items:center; flex-wrap:wrap; gap:12px;
+      position:sticky; top:0; z-index:50;
+    }
+    .btn {
+      padding:8px 16px; border-radius:10px; font-weight:600; font-size:0.8rem;
+      border:none; cursor:pointer; text-decoration:none; transition:0.2s;
+      display:inline-flex; align-items:center; gap:6px;
+      background:rgba(255,255,255,0.15); color:#fff; border:1px solid rgba(255,255,255,0.3);
+    }
+    .btn-primary { background:#38bdf8; color:#0f172a; border-color:#38bdf8; }
+
+    .container { max-width:900px; margin:20px auto; padding:0 20px; }
+
+    .qr-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 20px;
+    }
+    .qr-card {
+      background:var(--surface); border-radius:14px; padding:16px;
+      text-align:center; box-shadow:0 4px 12px rgba(0,0,0,0.06);
+      border:1px solid #e2e8f0;
+    }
+    body.dark .qr-card { border-color:#334155; }
+    .qr-card img {
+      width:150px; height:150px; object-fit:contain;
+      background:#fff; padding:8px; border-radius:8px;
+    }
+    .qr-card h3 { font-size:0.85rem; margin-top:8px; color:var(--text); }
+    .qr-card p { font-size:0.7rem; color:#64748b; }
+
+    .btn-print {
+      display:block; width:200px; margin:20px auto; padding:14px;
+      background:#10b981; color:#fff; border:none; border-radius:10px;
+      font-weight:700; font-size:1rem; cursor:pointer;
+    }
+
+    /* Print Style */
+    @media print {
+      body { background: white !important; }
+      .topbar, .btn-print { display: none !important; }
+      .qr-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+      }
+      .qr-card {
+        box-shadow: none;
+        border: 1px solid #ccc;
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <h1>🖨️ Print QR Codes</h1>
+  <div style="display:flex; gap:10px;">
+    <a href="index.html" class="btn btn-primary">🏠 Dashboard</a>
+  </div>
+</header>
+
+<div class="container">
+  <button class="btn-print" onclick="window.print()">🖨️ Print All QR Codes</button>
+  
+  <div class="qr-grid" id="qrGrid">
+    <p style="text-align:center; padding:20px;">Loading QR codes...</p>
+  </div>
+</div>
+
+<script>
+  const token = localStorage.getItem('token');
+  if (!token) { window.location.href = 'login.html'; }
+
+  async function loadQRCodes() {
+    try {
+      const res = await fetch('/products');
+      const products = await res.json();
+      const grid = document.getElementById('qrGrid');
+      
+      if (!products.length) {
+        grid.innerHTML = '<p style="text-align:center;padding:20px;">No products found</p>';
+        return;
+      }
+
+      grid.innerHTML = products.map(p => `
+        <div class="qr-card">
+          <img src="qrcodes/product-${p.id}.png" alt="QR for ${p.name}" onerror="this.src='https://placehold.co/150?text=No+QR'">
+          <h3>${p.name}</h3>
+          <p>${p.variant || ''} | ID: ${p.id}</p>
+        </div>
+      `).join('');
+    } catch(err) {
+      document.getElementById('qrGrid').innerHTML = '<p style="text-align:center;color:red;">❌ Failed to load</p>';
+    }
+  }
+
+  (function(){ loadQRCodes(); })();
+</script>
+</body>
+</html>

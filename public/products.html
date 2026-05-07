@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📦 Products | Shop Manager</title>
+  <style>
+    :root {
+      --bg: #f8f9fa; --text: #212529; --table-bg: #ffffff;
+      --table-border: #dee2e6; --header-bg: #e9ecef;
+      --shadow: 0 4px 6px rgba(0, 0, 0, 0.1); --card-bg: #ffffff;
+      --edit-btn: #ffc107; --delete-btn: #dc3545;
+    }
+    body.dark {
+      --bg: #1a1a2e; --text: #e0e0e0; --table-bg: #16213e;
+      --table-border: #0f3460; --header-bg: #0f3460;
+      --shadow: 0 4px 6px rgba(0, 0, 0, 0.4); --card-bg: #16213e;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg); color: var(--text); transition: all 0.3s ease;
+    }
+    .container { max-width: 1100px; margin: 0 auto; padding: 1rem; }
+
+    .header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 1rem; padding-bottom: 0.8rem; border-bottom: 2px solid #38bdf8; }
+    .header h1 { font-size: 1.4rem; color: #38bdf8; }
+    .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn { padding: 8px 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.8rem; text-decoration: none; transition: 0.2s; }
+    .btn-accent { background: #38bdf8; color: #020617; }
+    .btn-outline { background: transparent; border: 1px solid #38bdf8; color: #38bdf8; }
+    .btn-danger { background: #dc3545; color: white; }
+    .btn:hover { opacity: 0.8; }
+
+    .search-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 1.2rem; }
+    .search-bar input, .search-bar select { padding: 0.6rem 1rem; border: 1px solid var(--table-border); border-radius: 10px; background: var(--card-bg); color: var(--text); font-size: 0.9rem; outline: none; }
+    .search-bar input { flex: 1 1 250px; }
+
+    .add-form { background: var(--card-bg); border-radius: 12px; box-shadow: var(--shadow); padding: 1rem; margin-bottom: 1.5rem; display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: flex-end; }
+    .form-group { display: flex; flex-direction: column; flex: 1 1 110px; }
+    .form-group label { font-size: 0.75rem; margin-bottom: 0.2rem; color: #666; }
+    .form-group input, .form-group select { padding: 0.5rem; border: 1px solid var(--table-border); border-radius: 8px; background: var(--bg); color: var(--text); outline: none; }
+    .btn-submit { padding: 0.6rem 1.5rem; background: #38bdf8; color: #020617; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+
+    .table-wrapper { background: var(--card-bg); border-radius: 12px; box-shadow: var(--shadow); overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 700px; }
+    th, td { padding: 0.6rem 0.8rem; text-align: left; font-size: 0.85rem; }
+    th { background-color: var(--header-bg); font-weight: 600; text-transform: uppercase; font-size: 0.75rem; }
+    td { border-bottom: 1px solid var(--table-border); }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background-color: rgba(0,0,0,0.03); }
+    body.dark tr:hover td { background-color: rgba(255,255,255,0.05); }
+    .low-stock { color: #dc3545; font-weight: bold; }
+
+    .btn-edit, .btn-delete { padding: 4px 10px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.75rem; font-weight: 600; margin: 0 2px; }
+    .btn-edit { background: #ffc107; color: #020617; }
+    .btn-delete { background: #dc3545; color: white; }
+
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 100; justify-content: center; align-items: center; }
+    .modal.show { display: flex; }
+    .modal-content { background: var(--card-bg); border-radius: 12px; padding: 1.5rem; width: 90%; max-width: 420px; box-shadow: var(--shadow); }
+    .modal-content h3 { margin-bottom: 1rem; color: var(--text); }
+    .modal-content .form-group { margin-bottom: 0.8rem; }
+    .modal-content input, .modal-content select { width: 100%; }
+    .modal-actions { display: flex; gap: 10px; margin-top: 1rem; }
+    .modal-actions button { flex: 1; padding: 0.5rem; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
+    .btn-save { background: #38bdf8; color: #020617; }
+    .btn-cancel { background: #64748b; color: white; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📦 Products</h1>
+      <div class="header-actions">
+        <a href="bill.html" class="btn btn-outline">🧾 Billing</a>
+        <a href="index.html" class="btn btn-accent">🏠 Dashboard</a>
+      </div>
+    </div>
+
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="🔍 Search..." oninput="renderFilteredProducts()">
+      <select id="categoryFilter" onchange="renderFilteredProducts()">
+        <option value="">All Categories</option>
+        <option value="Grain">Grain</option><option value="Pulse">Pulse</option>
+        <option value="Oil">Oil</option><option value="Grocery">Grocery</option>
+        <option value="Toiletry">Toiletry</option><option value="Beverage">Beverage</option>
+      </select>
+    </div>
+
+    <div class="add-form">
+      <div class="form-group"><label>Name</label><input type="text" id="nameInput" placeholder="Rice"></div>
+      <div class="form-group"><label>Category</label><select id="catInput"><option value="Grain">Grain</option><option value="Pulse">Pulse</option><option value="Oil">Oil</option><option value="Grocery">Grocery</option><option value="Toiletry">Toiletry</option><option value="Beverage">Beverage</option></select></div>
+      <div class="form-group"><label>Variant</label><input type="text" id="varInput" placeholder="1 kg"></div>
+      <div class="form-group"><label>Price</label><input type="number" id="priceInput" placeholder="50" min="1"></div>
+      <div class="form-group"><label>Stock</label><input type="number" id="stockInput" value="0" min="0"></div>
+      <button class="btn-submit" onclick="addProduct()">➕ Add</button>
+    </div>
+
+    <div class="table-wrapper">
+      <table id="productTable">
+        <thead>
+          <tr><th>ID</th><th>Name</th><th>Category</th><th>Variant</th><th>Price</th><th>Stock</th><th>Actions</th></tr>
+        </thead>
+        <tbody><tr><td colspan="7" style="text-align:center; padding:20px;">⏳ Loading...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Edit Modal -->
+  <div class="modal" id="editModal">
+    <div class="modal-content">
+      <h3>✏️ Edit Product</h3>
+      <input type="hidden" id="editId">
+      <div class="form-group"><label>Name</label><input type="text" id="editName"></div>
+      <div class="form-group"><label>Category</label><select id="editCategory"><option value="Grain">Grain</option><option value="Pulse">Pulse</option><option value="Oil">Oil</option><option value="Grocery">Grocery</option><option value="Toiletry">Toiletry</option><option value="Beverage">Beverage</option></select></div>
+      <div class="form-group"><label>Variant</label><input type="text" id="editVariant"></div>
+      <div class="form-group"><label>Price</label><input type="number" id="editPrice" min="1"></div>
+      <div class="form-group"><label>Stock</label><input type="number" id="editStock" min="0"></div>
+      <div class="modal-actions">
+        <button class="btn-save" onclick="saveEdit()">✅ Save</button>
+        <button class="btn-cancel" onclick="closeEditModal()">❌ Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ========== AUTH CHECK ==========
+    const token = localStorage.getItem('token');
+    if (!token) { window.location.href = 'login.html'; }
+
+    async function authFetch(url, options = {}) {
+      if (!token) { window.location.href = 'login.html'; return; }
+      options.headers = { ...options.headers, 'Authorization': 'Bearer ' + token };
+      const res = await fetch(url, options);
+      if (res.status === 401) { localStorage.removeItem('token'); window.location.href = 'login.html'; }
+      return res;
+    }
+
+    const API_URL = '/products';
+    let allProducts = [];
+
+    async function loadProducts() {
+      try {
+        const res = await authFetch(API_URL);
+        allProducts = await res.json();
+        renderFilteredProducts();
+      } catch (err) {
+        document.querySelector('#productTable tbody').innerHTML = '<tr><td colspan="7" style="color:red; text-align:center;">❌ Failed to load</td></tr>';
+      }
+    }
+
+    function renderFilteredProducts() {
+      const search = document.getElementById('searchInput').value.toLowerCase().trim();
+      const cat = document.getElementById('categoryFilter').value;
+      let filtered = allProducts;
+      if (cat) filtered = filtered.filter(p => p.category === cat);
+      if (search) filtered = filtered.filter(p => p.name.toLowerCase().includes(search) || (p.category||'').toLowerCase().includes(search) || (p.variant||'').toLowerCase().includes(search));
+      renderTable(filtered);
+    }
+
+    function renderTable(products) {
+      const tbody = document.querySelector('#productTable tbody');
+      if (!products.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px;">No products found</td></tr>'; return; }
+      tbody.innerHTML = products.map(p => {
+        const stockClass = p.stock < 20 ? 'low-stock' : '';
+        return `<tr><td>${p.id}</td><td>${p.name}</td><td>${p.category||'-'}</td><td>${p.variant||'-'}</td><td>${p.price} ₹</td><td class="${stockClass}">${p.stock} ${p.unit||''}</td><td><button class="btn-edit" onclick="openEditModal(${p.id})">✏️</button><button class="btn-delete" onclick="deleteProduct(${p.id})">🗑️</button></td></tr>`;
+      }).join('');
+    }
+
+    async function addProduct() {
+      const name = document.getElementById('nameInput').value.trim();
+      const category = document.getElementById('catInput').value;
+      const variant = document.getElementById('varInput').value.trim();
+      const price = parseFloat(document.getElementById('priceInput').value);
+      const stock = parseInt(document.getElementById('stockInput').value) || 0;
+      if (!name || !category || !variant || isNaN(price) || price <= 0) { alert('❌ All fields required!'); return; }
+      try {
+        const res = await authFetch(API_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name,category,variant,price,stock}) });
+        if (!res.ok) { const err = await res.json(); alert('❌ '+err.message); return; }
+        document.getElementById('nameInput').value=''; document.getElementById('varInput').value=''; document.getElementById('priceInput').value=''; document.getElementById('stockInput').value='0';
+        loadProducts();
+      } catch(err) { alert('❌ Network error'); }
+    }
+
+    async function deleteProduct(id) {
+      if (!confirm('Delete this product?')) return;
+      await authFetch(`${API_URL}/${id}`, { method:'DELETE' });
+      loadProducts();
+    }
+
+    function openEditModal(id) {
+      const p = allProducts.find(x => x.id===id);
+      if(!p)return;
+      document.getElementById('editId').value=p.id;
+      document.getElementById('editName').value=p.name;
+      document.getElementById('editCategory').value=p.category||'';
+      document.getElementById('editVariant').value=p.variant||'';
+      document.getElementById('editPrice').value=p.price;
+      document.getElementById('editStock').value=p.stock;
+      document.getElementById('editModal').classList.add('show');
+    }
+    function closeEditModal() { document.getElementById('editModal').classList.remove('show'); }
+
+    async function saveEdit() {
+      const id=document.getElementById('editId').value;
+      const name=document.getElementById('editName').value.trim();
+      const category=document.getElementById('editCategory').value;
+      const variant=document.getElementById('editVariant').value.trim();
+      const price=parseFloat(document.getElementById('editPrice').value);
+      const stock=parseInt(document.getElementById('editStock').value)||0;
+      if(!name||!category||!variant||isNaN(price)||price<=0){alert('❌ All fields required!');return;}
+      await authFetch(`${API_URL}/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,category,variant,price,stock})});
+      closeEditModal(); loadProducts();
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle('dark');
+      localStorage.setItem('theme', document.body.classList.contains('dark')?'dark':'light');
+    }
+    (function(){
+      if(localStorage.getItem('theme')==='dark') document.body.classList.add('dark');
+      loadProducts();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>🧾 Billing Counter | Shop Manager</title>
+  <style>
+    /* ========== ROOT VARIABLES ========== */
+    :root {
+      --bg: #f1f5f9; --surface: #ffffff; --text: #1e293b; --text-muted: #64748b;
+      --border: #e2e8f0; --accent: #3b82f6; --danger: #ef4444; --success: #10b981;
+      --panel-search-bg: #eff6ff; --panel-search-border: #3b82f6;
+      --panel-cart-bg: #fff7ed; --panel-cart-border: #f97316;
+      --header-bg: linear-gradient(135deg, #1e40af, #1e3a8a);
+    }
+    body.dark {
+      --bg: #0f172a; --surface: #1e293b; --text: #e2e8f0; --text-muted: #94a3b8;
+      --border: #334155; --panel-search-bg: #1e2a3a; --panel-cart-bg: #2a1f1a;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html, body { width:100%; overflow-x:hidden; }
+    body { font-family:'Segoe UI',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+    /* ===== HEADER ===== */
+    .topbar {
+      background:var(--header-bg); color:#fff; padding:10px 14px;
+      display:flex; justify-content:space-between; align-items:center;
+      flex-wrap:wrap; gap:8px; position:sticky; top:0; z-index:50; width:100%;
+    }
+    .topbar .title { font-size:1.2rem; font-weight:800; }
+    .btn {
+      padding:7px 12px; border-radius:8px; font-weight:600; font-size:0.7rem;
+      border:none; cursor:pointer; text-decoration:none; transition:all 0.2s;
+      display:inline-flex; align-items:center; gap:5px;
+      background:rgba(255,255,255,0.15); color:#fff; border:1px solid rgba(255,255,255,0.3);
+    }
+    .btn:hover { background:rgba(255,255,255,0.25); }
+    .btn-primary { background:#38bdf8; color:#0f172a; border-color:#38bdf8; font-weight:700; }
+    .btn-scan { background:#10b981; color:#fff; border-color:#10b981; font-weight:700; }
+    .btn-success { background:var(--success); color:#fff; }
+    .btn-danger { background:var(--danger); color:#fff; }
+    .btn-download { background:#8b5cf6; color:#fff; border-color:#8b5cf6; }
+    .btn-download:hover { background:#a78bfa; }
+
+    /* ===== MAIN LAYOUT ===== */
+    .main-grid {
+      display:grid; grid-template-columns:1fr 380px; gap:12px;
+      padding:12px; max-width:1300px; margin:0 auto; min-height:calc(100vh - 50px);
+    }
+    @media(max-width:750px){ .main-grid { grid-template-columns:1fr; } }
+
+    /* ===== PANELS ===== */
+    .panel {
+      border-radius:14px; padding:14px; box-shadow:0 2px 8px rgba(0,0,0,0.06);
+      display:flex; flex-direction:column; border:3px solid transparent;
+    }
+    .panel-search { background:var(--panel-search-bg); border-color:var(--panel-search-border); }
+    .panel-cart { background:var(--panel-cart-bg); border-color:var(--panel-cart-border); }
+    .panel h3 { font-size:1rem; margin-bottom:10px; }
+    .panel-search h3 { color:var(--panel-search-border); }
+    .panel-cart h3 { color:var(--panel-cart-border); }
+
+    /* ===== SEARCH ===== */
+    .search-box { width:100%; padding:10px 12px; border:2px solid var(--border); border-radius:10px; background:var(--surface); color:var(--text); font-size:0.85rem; outline:none; margin-bottom:8px; }
+    .prod-list { flex:1; overflow-y:auto; max-height:55vh; }
+    .prod-row { display:flex; justify-content:space-between; align-items:center; padding:8px 10px; border:1px solid transparent; border-radius:8px; margin-bottom:3px; cursor:pointer; background:var(--surface); transition:0.2s; }
+    .prod-row:hover { border-color:var(--accent); }
+    .prod-row h4 { font-size:0.85rem; }
+    .prod-row .meta { font-size:0.7rem; color:var(--text-muted); }
+    .prod-row .price { font-weight:700; color:var(--panel-search-border); font-size:0.9rem; }
+
+    /* ===== CART ===== */
+    .cart-items { flex:1; overflow-y:auto; max-height:40vh; margin-bottom:8px; }
+    .cart-row { display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid var(--border); font-size:0.8rem; flex-wrap:wrap; }
+    .cart-row .info { flex:1; min-width:80px; }
+    .cart-row .info strong { display:block; font-size:0.8rem; }
+    .cart-row .info span { font-size:0.65rem; color:var(--text-muted); }
+    .qty-ctrl { display:flex; align-items:center; gap:3px; }
+    .qty-ctrl button { width:24px; height:24px; border-radius:6px; border:none; background:var(--panel-cart-border); color:#fff; font-weight:bold; font-size:0.9rem; cursor:pointer; }
+    .remove-btn { background:none; border:none; color:var(--danger); cursor:pointer; font-size:1rem; padding:2px; }
+
+    /* ===== INPUTS (fixed mobile overflow) ===== */
+    .input-row { display:flex; gap:6px; margin:6px 0; flex-wrap:wrap; }
+    .input-row input, .input-row select {
+      flex:1; min-width:0; padding:8px 10px; border-radius:8px;
+      border:1px solid var(--border); background:var(--surface); color:var(--text);
+      font-size:0.8rem; outline:none; max-width:100%; word-break:break-all;
+    }
+    select { cursor:pointer; }
+
+    /* ===== SUMMARY ===== */
+    .summary { border-top:2px solid var(--panel-cart-border); padding-top:8px; margin-top:auto; }
+    .summary-row { display:flex; justify-content:space-between; margin:4px 0; font-size:0.85rem; }
+    .summary-total { font-weight:700; font-size:1.1rem; margin-top:6px; color:var(--panel-cart-border); }
+
+    /* ===== MODAL ===== */
+    .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:999; justify-content:center; align-items:center; }
+    .modal.show { display:flex; }
+    .modal-box { background:#fff; color:#1e293b; border-radius:14px; padding:24px; max-width:360px; width:90%; text-align:center; }
+    .modal-box h2 { color:#10b981; margin-bottom:6px; font-size:1.1rem; }
+    .modal-box p { margin:3px 0; font-size:0.85rem; }
+    .modal-actions { display:flex; gap:6px; margin-top:14px; justify-content:center; flex-wrap:wrap; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <span class="title">🧾 Billing Counter</span>
+    <div style="display:flex; gap:6px;">
+      <a href="products.html" class="btn">📦 Products</a>
+      <a href="scanner.html" class="btn btn-scan">📷 Scan QR</a>
+      <a href="index.html" class="btn btn-primary">🏠 Dashboard</a>
+    </div>
+    <button class="btn" onclick="toggleTheme()">🌓</button>
+  </header>
+
+  <div class="main-grid">
+    <section class="panel panel-search">
+      <h3>🔍 Search Products</h3>
+      <input class="search-box" id="searchInput" placeholder="Search..." oninput="searchProducts()">
+      <div class="prod-list" id="productResults"><p style="color:var(--text-muted);text-align:center;padding:20px;">Type to search...</p></div>
+    </section>
+
+    <section class="panel panel-cart">
+      <h3>🛒 Cart</h3>
+      <div class="cart-items" id="cartItems"><p style="color:var(--text-muted);text-align:center;padding:20px;">No items</p></div>
+      <div class="input-row">
+        <input type="text" id="custName" placeholder="Customer Name">
+        <input type="text" id="custMobile" placeholder="Mobile">
+      </div>
+      <div class="input-row">
+        <select id="payMode">
+          <option value="">-- Select Payment --</option>
+          <option value="Cash">💵 Cash</option>
+          <option value="Card">💳 Card</option>
+          <option value="Online">🌐 Online</option>
+          <option value="Due">📒 Due</option>
+        </select>
+        <input type="number" id="paidAmount" placeholder="Paid Amount (₹)" value="0" min="0" oninput="renderCart()">
+      </div>
+      <div class="input-row">
+        <input type="number" id="discountInput" placeholder="Discount (₹)" value="0" min="0" oninput="renderCart()">
+      </div>
+      <div class="summary">
+        <div class="summary-row"><span>Subtotal:</span><span id="subtotal">0 ₹</span></div>
+        <div class="summary-row"><span>Discount:</span><span id="discountShow">0 ₹</span></div>
+        <div class="summary-row"><span>Paid:</span><span id="paidShow">0 ₹</span></div>
+        <div class="summary-row summary-total"><span>Due</span><span id="dueShow">0 ₹</span></div>
+        <div class="summary-row"><span>Grand Total</span><span id="grandTotal">0 ₹</span></div>
+      </div>
+      <div class="input-row" style="margin-top:8px;">
+        <button class="btn btn-danger" onclick="clearCart()" style="flex:1;">🗑️ Clear</button>
+        <button class="btn btn-success" onclick="completeSale()" style="flex:2;">✅ Complete Sale</button>
+      </div>
+    </section>
+  </div>
+
+  <div class="modal" id="successModal" onclick="if(event.target===this) closeModal()">
+    <div class="modal-box">
+      <h2>🎉 Sale Complete!</h2>
+      <p id="modalTotal"></p><p id="modalItems"></p><p id="modalCust"></p><p id="modalTransId"></p>
+      <p id="downloadMsg" style="color:#10b981; font-size:0.75rem; margin-top:4px;"></p>
+      <div class="modal-actions">
+        <button class="btn btn-primary" onclick="printBill()">🖨️ Print</button>
+        <button class="btn btn-download" onclick="downloadBill()">📥 Download</button>
+        <button class="btn" onclick="closeModal()">✅ OK</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('token');
+    if (!token) { window.location.href = 'login.html'; }
+    async function authFetch(url, options = {}) {
+      if (!token) { window.location.href = 'login.html'; return; }
+      options.headers = { ...options.headers, 'Authorization': 'Bearer ' + token };
+      const res = await fetch(url, options);
+      if (res.status === 401) { localStorage.removeItem('token'); window.location.href = 'login.html'; }
+      return res;
+    }
+
+    let cart=[], lastSale=null;
+    const API='/products';
+
+    function loadScannedCart() {
+      const scanned = localStorage.getItem('scannedCart');
+      if (scanned) { cart = JSON.parse(scanned); localStorage.removeItem('scannedCart'); renderCart(); }
+    }
+
+    async function searchProducts(){
+      const q=document.getElementById('searchInput').value.trim().toLowerCase();
+      const c=document.getElementById('productResults');
+      if(!q){c.innerHTML='<p style="color:var(--text-muted);text-align:center;padding:20px;">Type to search...</p>';return}
+      const res=await authFetch(API); const p=await res.json();
+      const f=p.filter(x=>x.name.toLowerCase().includes(q)||(x.category||'').toLowerCase().includes(q)||(x.variant||'').toLowerCase().includes(q));
+      if(!f.length){c.innerHTML='<p style="color:var(--text-muted);text-align:center;padding:20px;">No product found</p>';return}
+      c.innerHTML=f.map(x=>`<div class="prod-row" onclick="addToCart(${x.id})"><div><h4>${x.name}</h4><span class="meta">${x.variant||''} | Stock: ${x.stock}</span></div><div class="price">${x.price} ₹</div></div>`).join('');
+    }
+
+    function addToCart(id){
+      authFetch(API).then(r=>r.json()).then(p=>{
+        const x=p.find(i=>i.id===id);
+        if(!x||x.stock<=0){alert('❌ Out of stock!');return}
+        const e=cart.find(i=>i.id===id);
+        if(e){if(e.qty<x.stock)e.qty++;else{alert('❌ Not enough stock!');return}}
+        else cart.push({id:x.id,name:x.name,variant:x.variant,price:x.price,stock:x.stock,qty:1});
+        renderCart();
+      });
+    }
+
+    function changeQty(id,d){const i=cart.find(i=>i.id===id);if(!i)return;i.qty+=d;if(i.qty<1)cart=cart.filter(i=>i.id!==id);else if(i.qty>i.stock){i.qty=i.stock;alert('❌ Not enough stock!')}renderCart();}
+    function removeItem(id){cart=cart.filter(i=>i.id!==id);renderCart();}
+    function clearCart(){if(cart.length&&confirm('Clear cart?')){cart=[];renderCart();document.getElementById('discountInput').value=0;document.getElementById('paidAmount').value=0;}}
+
+    function renderCart(){
+      const c=document.getElementById('cartItems');
+      if(!cart.length){c.innerHTML='<p style="color:var(--text-muted);text-align:center;padding:20px;">No items</p>';updateSummary(0);return}
+      let s=0;
+      c.innerHTML=cart.map(i=>{const st=i.qty*i.price;s+=st;return`<div class="cart-row"><div class="info"><strong>${i.name}</strong><span>${i.variant||''} | ${i.price} ₹</span></div><div class="qty-ctrl"><button onclick="changeQty(${i.id},-1)">−</button><span>${i.qty}</span><button onclick="changeQty(${i.id},1)">+</button></div><span>${st} ₹</span><button class="remove-btn" onclick="removeItem(${i.id})">✕</button></div>`}).join('');
+      updateSummary(s);
+    }
+
+    function updateSummary(s){
+      const d=parseFloat(document.getElementById('discountInput').value)||0;
+      const paid=parseFloat(document.getElementById('paidAmount').value)||0;
+      const grand=Math.max(0,s-d);
+      const due=Math.max(0,grand-paid);
+      document.getElementById('subtotal').textContent=s+' ₹';
+      document.getElementById('discountShow').textContent=d+' ₹';
+      document.getElementById('paidShow').textContent=paid+' ₹';
+      document.getElementById('dueShow').textContent=due+' ₹';
+      document.getElementById('grandTotal').textContent=grand+' ₹';
+    }
+
+    async function completeSale(){
+      if(!cart.length){alert('❌ Cart empty!');return}
+      const d=parseFloat(document.getElementById('discountInput').value)||0;
+      const payMode=document.getElementById('payMode').value;
+      const paidAmount=parseFloat(document.getElementById('paidAmount').value)||0;
+      const cn=document.getElementById('custName').value.trim();
+      const cm=document.getElementById('custMobile').value.trim();
+      const res=await authFetch('/sales',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items:cart.map(i=>({id:i.id,qty:i.qty})),discount:d,payMode:payMode||'Cash',paidAmount:paidAmount,customer:{name:cn,mobile:cm}})});
+      const data=await res.json();
+      if(!res.ok){alert('❌ '+(data.message||'Failed'));return}
+      lastSale=data.sale;
+      document.getElementById('modalTotal').textContent='Grand Total: '+Math.max(0,cart.reduce((s,i)=>s+i.qty*i.price,0)-d)+' ₹';
+      document.getElementById('modalItems').textContent='Items: '+cart.length+' | Payment: '+payMode;
+      document.getElementById('modalCust').textContent=cn?'Customer: '+cn+(cm?' ('+cm+')':''):'';
+      document.getElementById('modalTransId').textContent='Transaction ID: '+data.sale.id;
+      document.getElementById('successModal').classList.add('show');
+      cart=[];renderCart();document.getElementById('discountInput').value=0;document.getElementById('paidAmount').value=0;document.getElementById('custName').value='';document.getElementById('custMobile').value='';
+    }
+
+    function closeModal(){document.getElementById('successModal').classList.remove('show');}
+
+    function printBill(){
+      if(!lastSale)return;
+      const w=window.open('','_blank');
+      w.document.write(`<html><head><title>Invoice #${lastSale.id}</title><style>*{margin:0;padding:0}body{font-family:'Segoe UI',sans-serif;padding:20px;background:#fff;color:#1e293b}.box{max-width:700px;margin:auto;border:2px solid #e2e8f0;border-radius:10px;padding:20px}h2{color:#1e40af}table{width:100%;border-collapse:collapse;margin:10px 0}th{background:#1e40af;color:#fff;padding:8px}td{padding:6px 8px;border-bottom:1px solid #e2e8f0}.tr{text-align:right}.big{font-size:1.2rem;font-weight:700;color:#1e40af}</style></head><body><div class="box"><h2>🏪 Milan General Store</h2><p>123, Station Road, Bolpur</p><p>GSTIN: 19ABCDE1234F1Z5</p><hr><p>Invoice #${lastSale.id} | ${new Date(lastSale.date).toLocaleString()}</p><p>Payment: ${lastSale.pay_mode}</p>${lastSale.customer?.name?'<p>Customer: '+lastSale.customer.name+'</p>':''}<table><tr><th>Item</th><th>Qty</th><th>Price</th><th class="tr">Subtotal</th></tr>${lastSale.items.map(i=>`<tr><td>${i.name} ${i.variant||''}</td><td>${i.qty}</td><td>${i.price} ₹</td><td class="tr">${i.subtotal} ₹</td></tr>`).join('')}</table><p>Subtotal: ${lastSale.subtotal} ₹</p><p>Discount: -${lastSale.discount} ₹</p><p>Paid: ${lastSale.total - (lastSale.due_amount||0)} ₹</p><p>Due: ${lastSale.due_amount||0} ₹</p><p class="big">Grand Total: ${lastSale.total} ₹</p></div></body></html>`);
+      w.print();
+    }
+
+    function downloadBill(){
+      if(!lastSale)return;
+      let t='MILAN GENERAL STORE\n==================\nDate: '+new Date(lastSale.date).toLocaleString()+'\nInvoice #: '+lastSale.id+'\nPayment: '+lastSale.pay_mode+'\n';
+      if(lastSale.customer?.name)t+='Customer: '+lastSale.customer.name+'\n';
+      t+='------------------\n';
+      lastSale.items.forEach(i=>t+=`${i.name} (${i.variant||''}) x${i.qty} = ${i.subtotal} ₹\n`);
+      t+='------------------\nSubtotal: '+lastSale.subtotal+' ₹\nDiscount: '+lastSale.discount+' ₹\nPaid: '+(lastSale.total - (lastSale.due_amount||0))+' ₹\nDue: '+(lastSale.due_amount||0)+' ₹\nGRAND TOTAL: '+lastSale.total+' ₹\n==================';
+      const b=new Blob([t],{type:'text/plain'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='Invoice-'+lastSale.id+'.txt';a.click();
+      document.getElementById('downloadMsg').textContent='✅ Downloaded successfully!';
+      setTimeout(()=>{document.getElementById('downloadMsg').textContent='';},3000);
+    }
+
+    function toggleTheme(){document.body.classList.toggle('dark');localStorage.setItem('theme',document.body.classList.contains('dark')?'dark':'light');}
+    (function(){if(localStorage.getItem('theme')==='dark')document.body.classList.add('dark');loadScannedCart();renderCart();})();
+  </script>
+</body>
+</html>

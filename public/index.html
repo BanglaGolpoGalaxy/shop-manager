@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Shop Manager | Dashboard</title>
+  <style>
+    /* ===== ROOT VARIABLES ===== */
+    :root {
+      --bg: #f1f5f9; --surface: #ffffff; --text: #1e293b; --text-muted: #64748b;
+      --border: #e2e8f0; --shadow: 0 4px 16px rgba(0,0,0,0.06);
+      --shadow-hover: 0 12px 30px rgba(0,0,0,0.12);
+    }
+    body.dark {
+      --bg: #0f172a; --surface: #1e293b; --text: #e2e8f0;
+      --text-muted: #94a3b8; --border: #334155;
+      --shadow: 0 4px 16px rgba(0,0,0,0.3);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; transition: 0.3s;
+    }
+
+    /* ===== SHOP HEADER ===== */
+    .shop-header {
+      background: linear-gradient(135deg, #1e40af, #1e3a8a);
+      color: #fff; padding: 20px 24px; text-align: center;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+    .shop-header h1 { font-size: 1.8rem; margin-bottom: 4px; }
+    .shop-header p { font-size: 0.85rem; opacity: 0.9; margin: 2px 0; }
+    .reg-badge {
+      display: inline-block; background: rgba(255,255,255,0.2);
+      padding: 4px 16px; border-radius: 20px; font-weight: 600; font-size: 0.75rem;
+      margin-top: 6px;
+    }
+
+    /* ===== TOP ACTIONS ===== */
+    .top-actions {
+      display: flex; justify-content: flex-end; padding: 12px 24px; gap: 8px;
+    }
+    .btn {
+      padding: 8px 18px; border-radius: 10px; font-weight: 600; font-size: 0.8rem;
+      border: none; cursor: pointer; text-decoration: none; transition: 0.2s;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn-outline {
+      background: var(--surface); color: var(--text); border: 1px solid var(--border);
+    }
+    .btn-outline:hover { border-color: #3b82f6; color: #3b82f6; }
+
+    /* ===== MAIN ===== */
+    .container { max-width: 1000px; margin: 0 auto; padding: 0 24px 40px; }
+    .welcome { text-align: center; margin: 20px 0 30px; color: var(--text-muted); }
+
+    /* ===== CARD GRID ===== */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 20px;
+    }
+    .card {
+      background: var(--surface); border-radius: 18px; padding: 28px 20px;
+      text-align: center; cursor: pointer; text-decoration: none; color: var(--text);
+      border: 3px solid transparent; box-shadow: var(--shadow);
+      transition: all 0.3s; position: relative; overflow: hidden;
+    }
+    .card:hover {
+      transform: translateY(-8px); box-shadow: var(--shadow-hover);
+    }
+    .card .icon { font-size: 3rem; margin-bottom: 12px; }
+    .card h3 { font-size: 1.1rem; margin-bottom: 6px; }
+    .card p { font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; }
+
+    /* ===== INDIVIDUAL CARD COLORS ===== */
+    .card-products { border-color: #3b82f6; background: linear-gradient(135deg, #eff6ff, #dbeafe); }
+    body.dark .card-products { background: linear-gradient(135deg, #1e2a4a, #121a2f); }
+    .card-products:hover { border-color: #2563eb; }
+
+    .card-billing { border-color: #f97316; background: linear-gradient(135deg, #fff7ed, #fed7aa); }
+    body.dark .card-billing { background: linear-gradient(135deg, #2a1f1a, #1f180f); }
+    .card-billing:hover { border-color: #ea580c; }
+
+    .card-scanner { border-color: #10b981; background: linear-gradient(135deg, #ecfdf5, #a7f3d0); }
+    body.dark .card-scanner { background: linear-gradient(135deg, #1a2a1e, #0f1f14); }
+    .card-scanner:hover { border-color: #059669; }
+
+    .card-qr { border-color: #f59e0b; background: linear-gradient(135deg, #fffbeb, #fde68a); }
+    body.dark .card-qr { background: linear-gradient(135deg, #2a2510, #1f1a08); }
+    .card-qr:hover { border-color: #d97706; }
+
+    .card-reports { border-color: #8b5cf6; background: linear-gradient(135deg, #f5f3ff, #ddd6fe); }
+    body.dark .card-reports { background: linear-gradient(135deg, #1e1a2a, #14101f); }
+    .card-reports:hover { border-color: #7c3aed; }
+
+    .card-settings { border-color: #6366f1; background: linear-gradient(135deg, #eef2ff, #c7d2fe); }
+    body.dark .card-settings { background: linear-gradient(135deg, #1a1a2e, #101020); }
+    .card-settings:hover { border-color: #4f46e5; }
+
+    .card-logout { border-color: #ef4444; background: linear-gradient(135deg, #fef2f2, #fecaca); }
+    body.dark .card-logout { background: linear-gradient(135deg, #2a1a1a, #1f1010); }
+    .card-logout:hover { border-color: #dc2626; }
+
+    /* ===== BACK LINK ===== */
+    .back-link { display: block; text-align: center; margin-top: 30px; color: var(--text-muted); font-size: 0.85rem; }
+    .back-link:hover { color: #3b82f6; }
+  </style>
+</head>
+<body>
+
+  <!-- ===== SHOP HEADER ===== -->
+  <div class="shop-header">
+    <h1>🏪 Milan General Store</h1>
+    <p>📍 123, Station Road, Bolpur, Birbhum, WB - 731204</p>
+    <p>📞 +91 98765 43210 | ✉️ milanstore@email.com</p>
+    <span class="reg-badge">GSTIN: 19ABCDE1234F1Z5</span>
+  </div>
+
+  <!-- ===== TOP ACTIONS ===== -->
+  <div class="top-actions">
+    <button class="btn btn-outline" onclick="toggleTheme()">🌓</button>
+  </div>
+
+  <!-- ===== DASHBOARD CONTENT ===== -->
+  <div class="container">
+    <p class="welcome">Manage your shop efficiently — select an option below</p>
+
+    <div class="card-grid">
+      <!-- Products -->
+      <a href="products.html" class="card card-products">
+        <div class="icon">📦</div>
+        <h3>Products</h3>
+        <p>Add, edit, delete & manage products</p>
+      </a>
+
+      <!-- Billing -->
+      <a href="bill.html" class="card card-billing">
+        <div class="icon">🧾</div>
+        <h3>Billing</h3>
+        <p>Create bills & checkout</p>
+      </a>
+
+      <!-- Scanner -->
+      <a href="scanner.html" class="card card-scanner">
+        <div class="icon">📷</div>
+        <h3>Scanner</h3>
+        <p>Scan QR codes to check stock & price</p>
+      </a>
+
+      <!-- QR Codes -->
+      <a href="qrprint.html" class="card card-qr">
+        <div class="icon">🏷️</div>
+        <h3>QR Codes</h3>
+        <p>View, download & print all QR codes</p>
+      </a>
+
+      <!-- Reports -->
+      <a href="report.html" class="card card-reports">
+        <div class="icon">📊</div>
+        <h3>Reports</h3>
+        <p>Daily sales & profit-loss</p>
+      </a>
+
+      <!-- Settings -->
+      <a href="settings.html" class="card card-settings">
+        <div class="icon">⚙️</div>
+        <h3>Settings</h3>
+        <p>Shop profile & preferences</p>
+      </a>
+
+      <!-- Logout -->
+      <a href="logout.html" class="card card-logout">
+        <div class="icon">🚪</div>
+        <h3>Logout</h3>
+        <p>Sign out from the system</p>
+      </a>
+    </div>
+
+    <a href="../../index.html" class="back-link">← Back to Portfolio</a>
+  </div>
+
+  <script>
+    // ===== THEME TOGGLE =====
+    function toggleTheme() {
+      document.body.classList.toggle('dark');
+      localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+    }
+    (function() {
+      if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
+    })();
+  </script>
+</body>
+</html>

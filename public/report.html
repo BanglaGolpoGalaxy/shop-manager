@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📊 Sales Report | Shop Manager</title>
+  <style>
+    :root {
+      --bg: #f1f5f9; --surface: #ffffff; --text: #1e293b;
+      --text-muted: #64748b; --border: #e2e8f0;
+      --accent: #3b82f6; --success: #10b981; --danger: #ef4444;
+      --shadow: 0 4px 16px rgba(0,0,0,0.06);
+    }
+    body.dark {
+      --bg: #0f172a; --surface: #1e293b; --text: #e2e8f0;
+      --text-muted: #94a3b8; --border: #334155;
+      --shadow: 0 4px 16px rgba(0,0,0,0.3);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    .topbar { background: linear-gradient(135deg, #1e40af, #1e3a8a); color: #fff; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; position: sticky; top: 0; z-index: 50; }
+    .topbar h1 { font-size: 1.2rem; }
+    .btn { padding: 8px 14px; border-radius: 10px; font-weight: 600; font-size: 0.75rem; border: none; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.3); }
+    .btn-primary { background: #38bdf8; color: #0f172a; border-color: #38bdf8; }
+    .container { max-width: 1000px; margin: 0 auto; padding: 16px; }
+    .summary-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; margin-bottom: 16px; }
+    .summary-card { background: var(--surface); border-radius: 14px; padding: 16px; box-shadow: var(--shadow); text-align: center; border: 2px solid transparent; }
+    .summary-card h3 { font-size: 0.7rem; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; }
+    .summary-card .amount { font-size: 1.3rem; font-weight: 700; }
+    .card-total { border-color: #3b82f6; } .card-total .amount { color: #3b82f6; }
+    .card-cash { border-color: #10b981; } .card-cash .amount { color: #10b981; }
+    .card-card { border-color: #8b5cf6; } .card-card .amount { color: #8b5cf6; }
+    .card-online { border-color: #f59e0b; } .card-online .amount { color: #f59e0b; }
+    .card-due { border-color: #ef4444; } .card-due .amount { color: #ef4444; }
+    .filter-bar { display: flex; gap: 10px; margin-bottom: 16px; }
+    .filter-bar input { padding: 8px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 0.85rem; }
+    .table-wrapper { background: var(--surface); border-radius: 14px; box-shadow: var(--shadow); overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 600px; }
+    th, td { padding: 8px 10px; text-align: left; font-size: 0.8rem; border-bottom: 1px solid var(--border); }
+    th { font-weight: 600; font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; }
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 600; }
+    .badge-cash { background: #d1fae5; color: #065f46; } .badge-card { background: #ede9fe; color: #5b21b6; }
+    .badge-online { background: #fef3c7; color: #92400e; } .badge-due { background: #fee2e2; color: #991b1b; }
+  </style>
+</head>
+<body>
+<header class="topbar">
+  <h1>📊 Sales Report</h1>
+  <div style="display:flex; gap:8px;">
+    <a href="index.html" class="btn">🏠 Dashboard</a>
+    <a href="bill.html" class="btn btn-primary">🧾 Billing</a>
+    <button class="btn" onclick="toggleTheme()">🌓</button>
+  </div>
+</header>
+<div class="container">
+  <div class="summary-cards">
+    <div class="summary-card card-total"><h3>Total</h3><div class="amount" id="totalSales">0 ₹</div></div>
+    <div class="summary-card card-cash"><h3>Cash</h3><div class="amount" id="totalCash">0 ₹</div></div>
+    <div class="summary-card card-card"><h3>Card</h3><div class="amount" id="totalCard">0 ₹</div></div>
+    <div class="summary-card card-online"><h3>Online</h3><div class="amount" id="totalOnline">0 ₹</div></div>
+    <div class="summary-card card-due"><h3>Due</h3><div class="amount" id="totalDue">0 ₹</div></div>
+  </div>
+  <div class="filter-bar">
+    <input type="date" id="filterDate" onchange="loadReport()">
+    <button class="btn" onclick="loadReport()" style="background:var(--accent); color:#fff; border:none;">🔍 Filter</button>
+    <span style="font-size:0.85rem; color:var(--text-muted);" id="resultCount"></span>
+  </div>
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>ID</th><th>Date</th><th>Customer</th><th>Items</th><th>Subtotal</th><th>Discount</th><th>Total</th><th>Due</th><th>Payment</th></tr></thead>
+      <tbody id="reportBody"><tr><td colspan="9" style="text-align:center; padding:30px;">Loading...</td></tr></tbody>
+    </table>
+  </div>
+</div>
+<script>
+  const TOKEN = localStorage.getItem('token');
+  if (!TOKEN) { window.location.href = 'login.html'; }
+
+  async function loadReport() {
+    const date = document.getElementById('filterDate').value;
+    const url = date ? `/sales/${date}` : '/sales';
+    try {
+      const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + TOKEN } });
+      if (res.status === 401) { localStorage.removeItem('token'); window.location.href = 'login.html'; return; }
+      const sales = await res.json();
+      renderReport(sales);
+    } catch(err) {
+      document.getElementById('reportBody').innerHTML = '<tr><td colspan="9" style="color:red; text-align:center;">❌ Failed</td></tr>';
+    }
+  }
+  function renderReport(sales) {
+    const tbody = document.getElementById('reportBody');
+    if (!sales || !sales.length) {
+      tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding:30px;">No sales</td></tr>';
+      ['totalSales','totalCash','totalCard','totalOnline','totalDue'].forEach(id => document.getElementById(id).textContent = '0 ₹');
+      document.getElementById('resultCount').textContent = '';
+      return;
+    }
+    let total=0, cash=0, card=0, online=0, due=0;
+    tbody.innerHTML = sales.map(s => {
+      const paid = s.total - (s.due_amount || 0);
+      total += paid;
+      due += (s.due_amount || 0);
+      const pm = (s.pay_mode || '').trim().toLowerCase();
+      if (pm === 'cash') cash += paid;
+      else if (pm === 'card') card += paid;
+      else if (pm === 'online') online += paid;
+      const bc = pm === 'cash' ? 'badge-cash' : pm === 'card' ? 'badge-card' : pm === 'online' ? 'badge-online' : 'badge-due';
+      return `<tr>
+        <td>${s.id}</td>
+        <td>${new Date(s.date).toLocaleString()}</td>
+        <td>${s.customer_name || '-'}</td>
+        <td>${s.item_count || 0}</td>
+        <td>${s.subtotal || 0} ₹</td>
+        <td>${s.discount || 0} ₹</td>
+        <td><strong>${paid} ₹</strong></td>
+        <td><strong>${s.due_amount || 0} ₹</strong></td>
+        <td><span class="badge ${bc}">${s.pay_mode}</span></td>
+      </tr>`;
+    }).join('');
+    document.getElementById('totalSales').textContent = total+' ₹';
+    document.getElementById('totalCash').textContent = cash+' ₹';
+    document.getElementById('totalCard').textContent = card+' ₹';
+    document.getElementById('totalOnline').textContent = online+' ₹';
+    document.getElementById('totalDue').textContent = due+' ₹';
+    document.getElementById('resultCount').textContent = sales.length+' sale(s)';
+  }
+  function toggleTheme() {
+    document.body.classList.toggle('dark');
+    localStorage.setItem('theme', document.body.classList.contains('dark')?'dark':'light');
+  }
+  (function(){
+    if (localStorage.getItem('theme')==='dark') document.body.classList.add('dark');
+    document.getElementById('filterDate').value = new Date().toISOString().split('T')[0];
+    loadReport();
+  })();
+</script>
+</body>
+</html>
