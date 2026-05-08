@@ -38,17 +38,12 @@
     .btn-success { background:var(--success); color:#fff; }
     .btn-danger { background:var(--danger); color:#fff; }
     .btn-download { background:#f59e0b; color:#0f172a; border-color:#f59e0b; font-weight:700; }
+    .btn-view { background:#8b5cf6; color:#fff; border-color:#8b5cf6; font-weight:700; }
 
-    .main-grid {
-      display:grid; grid-template-columns:1fr 400px; gap:12px;
-      padding:12px; max-width:1300px; margin:0 auto; min-height:calc(100vh - 50px);
-    }
+    .main-grid { display:grid; grid-template-columns:1fr 420px; gap:12px; padding:12px; max-width:1300px; margin:0 auto; min-height:calc(100vh - 50px); }
     @media(max-width:750px){ .main-grid { grid-template-columns:1fr; } }
 
-    .panel {
-      border-radius:14px; padding:14px; box-shadow:0 2px 8px rgba(0,0,0,0.06);
-      display:flex; flex-direction:column; border:3px solid transparent;
-    }
+    .panel { border-radius:14px; padding:14px; box-shadow:0 2px 8px rgba(0,0,0,0.06); display:flex; flex-direction:column; border:3px solid transparent; }
     .panel-search { background:var(--panel-search-bg); border-color:var(--panel-search-border); }
     .panel-cart { background:var(--panel-cart-bg); border-color:var(--panel-cart-border); }
     .panel h3 { font-size:1rem; margin-bottom:10px; }
@@ -63,21 +58,23 @@
     .prod-row .meta { font-size:0.7rem; color:var(--text-muted); }
     .prod-row .price { font-weight:700; color:var(--panel-search-border); font-size:0.9rem; }
 
-    .cart-items { flex:1; overflow-y:auto; max-height:40vh; margin-bottom:8px; }
-    .cart-row { display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid var(--border); font-size:0.8rem; flex-wrap:wrap; }
-    .cart-row .info { flex:1; min-width:80px; }
-    .cart-row .info strong { display:block; font-size:0.8rem; }
-    .cart-row .info span { font-size:0.65rem; color:var(--text-muted); }
+    .cart-items { flex:1; overflow-y:auto; max-height:30vh; margin-bottom:8px; }
+    .cart-row { display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid var(--border); font-size:0.78rem; flex-wrap:wrap; }
+    .cart-row .info { flex:1; min-width:70px; }
+    .cart-row .info strong { display:block; font-size:0.78rem; }
+    .cart-row .info span { font-size:0.62rem; color:var(--text-muted); }
     .qty-ctrl { display:flex; align-items:center; gap:3px; }
-    .qty-ctrl button { width:24px; height:24px; border-radius:6px; border:none; background:var(--panel-cart-border); color:#fff; font-weight:bold; font-size:0.9rem; cursor:pointer; }
+    .qty-ctrl button { width:22px; height:22px; border-radius:5px; border:none; background:var(--panel-cart-border); color:#fff; font-weight:bold; font-size:0.8rem; cursor:pointer; }
     .remove-btn { background:none; border:none; color:var(--danger); cursor:pointer; font-size:1rem; padding:2px; }
 
-    .input-row { display:flex; gap:6px; margin:6px 0; flex-wrap:wrap; }
-    .input-row input { flex:1; min-width:60px; padding:8px 10px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--text); font-size:0.8rem; outline:none; max-width:100%; }
+    .input-row { display:flex; gap:6px; margin:4px 0; flex-wrap:wrap; }
+    .input-group { flex:1; min-width:55px; }
+    .input-group label { display:block; font-size:0.62rem; color:var(--text-muted); margin-bottom:1px; font-weight:600; text-transform:uppercase; }
+    .input-group input { width:100%; padding:6px 7px; border-radius:5px; border:1px solid var(--border); background:var(--surface); color:var(--text); font-size:0.78rem; outline:none; }
 
-    .summary { border-top:2px solid var(--panel-cart-border); padding-top:8px; margin-top:auto; }
-    .summary-row { display:flex; justify-content:space-between; margin:4px 0; font-size:0.85rem; }
-    .summary-total { font-weight:700; font-size:1.1rem; margin-top:6px; color:var(--panel-cart-border); }
+    .summary { border-top:2px solid var(--panel-cart-border); padding-top:6px; margin-top:auto; }
+    .summary-row { display:flex; justify-content:space-between; margin:3px 0; font-size:0.8rem; }
+    .summary-total { font-weight:700; font-size:1rem; margin-top:4px; color:var(--panel-cart-border); }
 
     .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:999; justify-content:center; align-items:center; }
     .modal.show { display:flex; }
@@ -108,23 +105,28 @@
     <section class="panel panel-cart">
       <h3>🛒 Cart</h3>
       <div class="cart-items" id="cartItems"><p style="color:var(--text-muted);text-align:center;padding:20px;">No items</p></div>
+      
       <div class="input-row">
-        <input type="text" id="custName" placeholder="Customer Name">
-        <input type="text" id="custMobile" placeholder="Mobile">
+        <div class="input-group"><label>Customer Name</label><input type="text" id="custName" placeholder="Optional"></div>
+        <div class="input-group"><label>Mobile</label><input type="text" id="custMobile" placeholder="Optional"></div>
       </div>
-      <!-- DUAL / TRIPLE PAYMENT -->
-      <div class="input-row" style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Payment Details (optional if fully due)</div>
+
+      <div class="input-row" style="font-size:0.65rem; color:var(--text-muted); margin-top:4px; font-weight:600;">💳 Payment Details</div>
       <div class="input-row">
-        <input type="number" id="cashAmount" placeholder="Cash (₹)" value="0" min="0" oninput="renderCart()">
-        <input type="number" id="cardAmount" placeholder="Card (₹)" value="0" min="0" oninput="renderCart()">
-        <input type="number" id="onlineAmount" placeholder="Online (₹)" value="0" min="0" oninput="renderCart()">
+        <div class="input-group"><label>Cash (₹)</label><input type="number" id="cashAmount" value="0" min="0" oninput="renderCart()"></div>
+        <div class="input-group"><label>Card (₹)</label><input type="number" id="cardAmount" value="0" min="0" oninput="renderCart()"></div>
+        <div class="input-group"><label>Online (₹)</label><input type="number" id="onlineAmount" value="0" min="0" oninput="renderCart()"></div>
       </div>
+
+      <div class="input-row" style="font-size:0.65rem; color:var(--text-muted); margin-top:4px; font-weight:600;">🏷️ Discount</div>
       <div class="input-row">
-        <input type="number" id="discountInput" placeholder="Discount (₹)" value="0" min="0" oninput="renderCart()">
+        <div class="input-group"><label>Manual (₹)</label><input type="number" id="discountManual" value="0" min="0" oninput="renderCart()"></div>
+        <div class="input-group"><label>Percent (%)</label><input type="number" id="discountPercent" value="0" min="0" max="100" oninput="renderCart()"></div>
       </div>
+
       <div class="summary">
         <div class="summary-row"><span>Subtotal:</span><span id="subtotal">0 ₹</span></div>
-        <div class="summary-row"><span>Discount:</span><span id="discountShow">0 ₹</span></div>
+        <div class="summary-row"><span>Discount:</span><span id="discountShow">0 ₹ (0%)</span></div>
         <div class="summary-row"><span>Total Paid:</span><span id="paidShow">0 ₹</span></div>
         <div class="summary-row summary-total"><span>Due</span><span id="dueShow">0 ₹</span></div>
         <div class="summary-row"><span>Grand Total</span><span id="grandTotal">0 ₹</span></div>
@@ -142,6 +144,7 @@
       <p id="modalTotal"></p><p id="modalItems"></p><p id="modalCust"></p><p id="modalTransId"></p>
       <p id="downloadMsg" style="color:#10b981; font-size:0.75rem; margin-top:4px;"></p>
       <div class="modal-actions">
+        <button class="btn btn-view" onclick="viewBill()">👁️ View Bill</button>
         <button class="btn btn-primary" onclick="printBill()">🖨️ Print</button>
         <button class="btn btn-download" onclick="downloadBill()">📥 Download</button>
         <button class="btn" onclick="closeModal()">✅ OK</button>
@@ -191,7 +194,7 @@
 
     function changeQty(id,d){const i=cart.find(i=>i.id===id);if(!i)return;i.qty+=d;if(i.qty<1)cart=cart.filter(i=>i.id!==id);else if(i.qty>i.stock){i.qty=i.stock;alert('❌ Not enough stock!')}renderCart();}
     function removeItem(id){cart=cart.filter(i=>i.id!==id);renderCart();}
-    function clearCart(){if(cart.length&&confirm('Clear cart?')){cart=[];renderCart();document.getElementById('discountInput').value=0;document.getElementById('cashAmount').value=0;document.getElementById('cardAmount').value=0;document.getElementById('onlineAmount').value=0;}}
+    function clearCart(){if(cart.length&&confirm('Clear cart?')){cart=[];renderCart();document.getElementById('discountManual').value=0;document.getElementById('discountPercent').value=0;document.getElementById('cashAmount').value=0;document.getElementById('cardAmount').value=0;document.getElementById('onlineAmount').value=0;}}
 
     function renderCart(){
       const c=document.getElementById('cartItems');
@@ -202,30 +205,37 @@
     }
 
     function updateSummary(s){
-      const d=parseFloat(document.getElementById('discountInput').value)||0;
-      const cash=parseFloat(document.getElementById('cashAmount').value)||0;
-      const card=parseFloat(document.getElementById('cardAmount').value)||0;
-      const online=parseFloat(document.getElementById('onlineAmount').value)||0;
-      const paid=cash+card+online;
-      const grand=Math.max(0,s-d);
-      const due=Math.max(0,grand-paid);
-      document.getElementById('subtotal').textContent=s+' ₹';
-      document.getElementById('discountShow').textContent=d+' ₹';
-      document.getElementById('paidShow').textContent=paid+' ₹';
-      document.getElementById('dueShow').textContent=due+' ₹';
-      document.getElementById('grandTotal').textContent=grand+' ₹';
+      const manualD = parseFloat(document.getElementById('discountManual').value) || 0;
+      const percentD = parseFloat(document.getElementById('discountPercent').value) || 0;
+      const percentAmount = Math.round((s * percentD) / 100);
+      const totalDiscount = manualD + percentAmount;
+      const cash = parseFloat(document.getElementById('cashAmount').value) || 0;
+      const card = parseFloat(document.getElementById('cardAmount').value) || 0;
+      const online = parseFloat(document.getElementById('onlineAmount').value) || 0;
+      const paid = cash + card + online;
+      const grand = Math.max(0, s - totalDiscount);
+      const due = Math.max(0, grand - paid);
+
+      document.getElementById('subtotal').textContent = s + ' ₹';
+      document.getElementById('discountShow').textContent = totalDiscount + ' ₹ (' + percentD + '%)';
+      document.getElementById('paidShow').textContent = paid + ' ₹';
+      document.getElementById('dueShow').textContent = due + ' ₹';
+      document.getElementById('grandTotal').textContent = grand + ' ₹';
     }
 
     async function completeSale(){
       if(!cart.length){alert('❌ Cart empty!');return}
-      const d=parseFloat(document.getElementById('discountInput').value)||0;
-      const cash=parseFloat(document.getElementById('cashAmount').value)||0;
-      const card=parseFloat(document.getElementById('cardAmount').value)||0;
-      const online=parseFloat(document.getElementById('onlineAmount').value)||0;
-      const totalPaid=cash+card+online;
-      const cn=document.getElementById('custName').value.trim();
-      const cm=document.getElementById('custMobile').value.trim();
-      // Auto-determine pay_mode
+      const manualD = parseFloat(document.getElementById('discountManual').value) || 0;
+      const percentD = parseFloat(document.getElementById('discountPercent').value) || 0;
+      const percentAmount = Math.round((cart.reduce((s,i)=>s+i.qty*i.price,0) * percentD) / 100);
+      const totalDiscount = manualD + percentAmount;
+      const cash = parseFloat(document.getElementById('cashAmount').value) || 0;
+      const card = parseFloat(document.getElementById('cardAmount').value) || 0;
+      const online = parseFloat(document.getElementById('onlineAmount').value) || 0;
+      const totalPaid = cash + card + online;
+      const cn = document.getElementById('custName').value.trim();
+      const cm = document.getElementById('custMobile').value.trim();
+
       let payMode = '';
       if (totalPaid > 0) {
         const parts = [];
@@ -236,20 +246,76 @@
       } else {
         payMode = 'Due';
       }
-      const res=await authFetch('/sales',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items:cart.map(i=>({id:i.id,qty:i.qty})),discount:d,payMode:payMode,cashAmount:cash,cardAmount:card,onlineAmount:online,customer:{name:cn,mobile:cm}})});
-      const data=await res.json();
-      if(!res.ok){alert('❌ '+(data.message||'Failed'));return}
-      lastSale=data.sale;
-      const grand=Math.max(0,cart.reduce((s,i)=>s+i.qty*i.price,0)-d);
-      document.getElementById('modalTotal').textContent='Grand Total: '+grand+' ₹';
-      document.getElementById('modalItems').textContent='Items: '+cart.length+' | Payment: '+payMode;
-      document.getElementById('modalCust').textContent=cn?'Customer: '+cn+(cm?' ('+cm+')':''):'';
-      document.getElementById('modalTransId').textContent='Transaction ID: '+data.sale.id;
+
+      const res = await authFetch('/sales', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: cart.map(i => ({ id: i.id, qty: i.qty })),
+          discount: totalDiscount,
+          payMode: payMode,
+          cashAmount: cash,
+          cardAmount: card,
+          onlineAmount: online,
+          customer: { name: cn, mobile: cm }
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) { alert('❌ ' + (data.message || 'Failed')); return; }
+      lastSale = data.sale;
+      const grand = Math.max(0, cart.reduce((s,i)=>s+i.qty*i.price,0) - totalDiscount);
+      document.getElementById('modalTotal').textContent = 'Grand Total: ' + grand + ' ₹';
+      document.getElementById('modalItems').textContent = 'Items: ' + cart.length + ' | Payment: ' + payMode;
+      document.getElementById('modalCust').textContent = cn ? 'Customer: ' + cn + (cm ? ' (' + cm + ')' : '') : '';
+      document.getElementById('modalTransId').textContent = 'Transaction ID: ' + data.sale.id;
       document.getElementById('successModal').classList.add('show');
-      cart=[];renderCart();document.getElementById('discountInput').value=0;document.getElementById('cashAmount').value=0;document.getElementById('cardAmount').value=0;document.getElementById('onlineAmount').value=0;document.getElementById('custName').value='';document.getElementById('custMobile').value='';
+      cart = []; renderCart();
+      document.getElementById('discountManual').value = 0;
+      document.getElementById('discountPercent').value = 0;
+      document.getElementById('cashAmount').value = 0;
+      document.getElementById('cardAmount').value = 0;
+      document.getElementById('onlineAmount').value = 0;
+      document.getElementById('custName').value = '';
+      document.getElementById('custMobile').value = '';
     }
 
-    function closeModal(){document.getElementById('successModal').classList.remove('show');}
+    function closeModal(){ document.getElementById('successModal').classList.remove('show'); }
+
+    function viewBill(){
+      if(!lastSale)return;
+      const w=window.open('','_blank');
+      w.document.write(`
+        <html><head><title>Invoice #${lastSale.id}</title>
+        <style>
+          *{margin:0;padding:0}body{font-family:'Segoe UI',sans-serif;padding:20px;background:#fff;color:#1e293b}
+          .box{max-width:700px;margin:auto;border:2px solid #e2e8f0;border-radius:10px;padding:20px}
+          h2{color:#1e40af}table{width:100%;border-collapse:collapse;margin:10px 0}
+          th{background:#1e40af;color:#fff;padding:8px}td{padding:6px 8px;border-bottom:1px solid #e2e8f0}
+          .tr{text-align:right}.big{font-size:1.2rem;font-weight:700;color:#1e40af}
+        </style></head><body>
+        <div class="box">
+          <h2>🏪 Milan General Store</h2>
+          <p>123, Station Road, Bolpur, Birbhum, WB - 731204</p>
+          <p>GSTIN: 19ABCDE1234F1Z5 | 📞 +91 98765 43210</p>
+          <hr>
+          <p><strong>Invoice #${lastSale.id}</strong> | ${new Date(lastSale.date).toLocaleString()}</p>
+          <p>Payment: ${lastSale.pay_mode}</p>
+          ${lastSale.customer?.name ? '<p>Customer: '+lastSale.customer.name+(lastSale.customer.mobile?' ('+lastSale.customer.mobile+')':'')+'</p>' : ''}
+          <table>
+            <tr><th>Item</th><th>Qty</th><th>Price</th><th class="tr">Subtotal</th></tr>
+            ${lastSale.items.map(i=>`<tr><td>${i.name} ${i.variant||''}</td><td>${i.qty}</td><td>${i.price} ₹</td><td class="tr">${i.subtotal} ₹</td></tr>`).join('')}
+          </table>
+          <p>Subtotal: ${lastSale.subtotal} ₹</p>
+          <p>Discount: -${lastSale.discount} ₹</p>
+          <p>Paid: ${lastSale.total - (lastSale.due_amount||0)} ₹</p>
+          <p>Due: ${lastSale.due_amount||0} ₹</p>
+          <p class="big">Grand Total: ${lastSale.total} ₹</p>
+          <hr>
+          <p style="text-align:center; font-size:0.8rem; color:#64748b;">Thank you for your purchase!</p>
+        </div>
+        </body></html>
+      `);
+    }
 
     function printBill(){
       if(!lastSale)return;
@@ -260,11 +326,23 @@
 
     function downloadBill(){
       if(!lastSale)return;
-      let t='MILAN GENERAL STORE\n==================\nDate: '+new Date(lastSale.date).toLocaleString()+'\nInvoice #: '+lastSale.id+'\nPayment: '+lastSale.pay_mode+'\n';
-      if(lastSale.customer?.name)t+='Customer: '+lastSale.customer.name+'\n';
-      t+='------------------\n';
-      lastSale.items.forEach(i=>t+=`${i.name} (${i.variant||''}) x${i.qty} = ${i.subtotal} ₹\n`);
-      t+='------------------\nSubtotal: '+lastSale.subtotal+' ₹\nDiscount: '+lastSale.discount+' ₹\nPaid: '+(lastSale.total - (lastSale.due_amount||0))+' ₹\nDue: '+(lastSale.due_amount||0)+' ₹\nGRAND TOTAL: '+lastSale.total+' ₹\n==================';
+      let t='MILAN GENERAL STORE - INVOICE\n';
+      t+='================================\n';
+      t+='Invoice #: '+lastSale.id+'\n';
+      t+='Date: '+new Date(lastSale.date).toLocaleString()+'\n';
+      t+='Payment: '+lastSale.pay_mode+'\n';
+      if(lastSale.customer?.name)t+='Customer: '+lastSale.customer.name+(lastSale.customer.mobile?' ('+lastSale.customer.mobile+')':'')+'\n';
+      t+='--------------------------------\n';
+      t+='Item | Qty | Price | Subtotal\n';
+      t+='--------------------------------\n';
+      lastSale.items.forEach(i=>t+=`${i.name} (${i.variant||''}) | ${i.qty} | ${i.price} ₹ | ${i.subtotal} ₹\n`);
+      t+='--------------------------------\n';
+      t+='Subtotal: '+lastSale.subtotal+' ₹\n';
+      t+='Discount: '+lastSale.discount+' ₹\n';
+      t+='Paid: '+(lastSale.total - (lastSale.due_amount||0))+' ₹\n';
+      t+='Due: '+(lastSale.due_amount||0)+' ₹\n';
+      t+='GRAND TOTAL: '+lastSale.total+' ₹\n';
+      t+='================================\n';
       const blob=new Blob([t],{type:'text/plain'});
       const url=URL.createObjectURL(blob);
       const a=document.createElement('a');
