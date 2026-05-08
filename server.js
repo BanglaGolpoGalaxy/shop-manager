@@ -33,7 +33,7 @@ async function initDatabase() {
 
 function createTables() {
   db.run(`CREATE TABLE IF NOT EXISTS products (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, category TEXT DEFAULT '', variant TEXT DEFAULT '', price REAL NOT NULL, stock INTEGER DEFAULT 0, unit TEXT DEFAULT '')`);
-  db.run(`CREATE TABLE IF NOT EXISTS sales (id INTEGER PRIMARY KEY AUTOINCREMENT, date TEXT NOT NULL, subtotal REAL DEFAULT 0, discount REAL DEFAULT 0, total REAL DEFAULT 0, due_amount REAL DEFAULT 0, pay_mode TEXT DEFAULT 'Cash', customer_name TEXT DEFAULT '', customer_mobile TEXT DEFAULT '')`);
+  db.run(`CREATE TABLE IF NOT EXISTS sales (id INTEGER PRIMARY KEY AUTOINCREMENT, date TEXT NOT NULL, subtotal REAL DEFAULT 0, discount REAL DEFAULT 0, total REAL DEFAULT 0, due_amount REAL DEFAULT 0, pay_mode TEXT DEFAULT 'Due', cash_amount REAL DEFAULT 0, card_amount REAL DEFAULT 0, online_amount REAL DEFAULT 0, customer_name TEXT DEFAULT '', customer_mobile TEXT DEFAULT '')`);
   db.run(`CREATE TABLE IF NOT EXISTS sale_items (id INTEGER PRIMARY KEY AUTOINCREMENT, sale_id INTEGER, product_id INTEGER, product_name TEXT, variant TEXT, price REAL, qty INTEGER, subtotal REAL)`);
   db.run(`CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE, password TEXT, role TEXT DEFAULT 'admin')`);
 }
@@ -133,7 +133,7 @@ app.delete('/products/:id', authMiddleware, (req, res) => {
 
 // ========== SALES ROUTES ==========
 app.post('/sales', authMiddleware, (req, res) => {
-  const { items, discount = 0, payMode = 'Cash', customer = {}, paidAmount = 0 } = req.body;
+  const { items, discount = 0, payMode = 'Due', cashAmount = 0, cardAmount = 0, onlineAmount = 0, customer = {} } = req.body;
   if (!items || !items.length) return res.status(400).json({ message: 'No items provided' });
   let subtotal = 0;
   for (let item of items) {
@@ -144,9 +144,11 @@ app.post('/sales', authMiddleware, (req, res) => {
     subtotal += p[4] * item.qty;
   }
   const total = Math.max(0, subtotal - discount);
-  const dueAmount = Math.max(0, total - (paidAmount || 0));
+  const totalPaid = (cashAmount || 0) + (cardAmount || 0) + (onlineAmount || 0);
+  const dueAmount = Math.max(0, total - totalPaid);
+  const finalPayMode = totalPaid > 0 ? payMode : 'Due';
   const date = new Date().toISOString();
-  db.run('INSERT INTO sales (date, subtotal, discount, total, due_amount, pay_mode, customer_name, customer_mobile) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [date, subtotal, discount, total, dueAmount, payMode, customer.name || '', customer.mobile || '']);
+  db.run('INSERT INTO sales (date, subtotal, discount, total, due_amount, pay_mode, cash_amount, card_amount, online_amount, customer_name, customer_mobile) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [date, subtotal, discount, total, dueAmount, finalPayMode, cashAmount || 0, cardAmount || 0, onlineAmount || 0, customer.name || '', customer.mobile || '']);
   const saleId = db.exec('SELECT last_insert_rowid() as id')[0].values[0][0];
   for (let item of items) {
     const product = db.exec('SELECT * FROM products WHERE id = ?', [item.id])[0].values[0];
@@ -154,7 +156,7 @@ app.post('/sales', authMiddleware, (req, res) => {
     db.run('INSERT INTO sale_items (sale_id, product_id, product_name, variant, price, qty, subtotal) VALUES (?, ?, ?, ?, ?, ?, ?)', [saleId, product[0], product[1], product[3] || '', product[4], item.qty, product[4] * item.qty]);
   }
   saveDatabase();
-  res.status(201).json({ message: 'Sale completed', sale: { id: saleId, date, subtotal, discount, total, due_amount: dueAmount, pay_mode: payMode, customer } });
+  res.status(201).json({ message: 'Sale completed', sale: { id: saleId, date, subtotal, discount, total, due_amount: dueAmount, pay_mode: finalPayMode, cash_amount: cashAmount, card_amount: cardAmount, online_amount: onlineAmount, customer } });
 });
 
 // GET /sales
