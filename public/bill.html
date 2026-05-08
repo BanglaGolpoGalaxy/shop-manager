@@ -82,6 +82,17 @@
     .modal-box h2 { color:#10b981; margin-bottom:6px; font-size:1.1rem; }
     .modal-box p { margin:3px 0; font-size:0.85rem; }
     .modal-actions { display:flex; gap:6px; margin-top:14px; justify-content:center; flex-wrap:wrap; }
+
+    /* Print View */
+    #printArea { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#fff; color:#1e293b; z-index:9999; overflow-y:auto; padding:20px; font-family:'Segoe UI',sans-serif; }
+    #printArea .invoice-box { max-width:700px; margin:auto; border:2px solid #e2e8f0; border-radius:10px; padding:20px; }
+    #printArea h2 { color:#1e40af; }
+    #printArea table { width:100%; border-collapse:collapse; margin:10px 0; }
+    #printArea th { background:#1e40af; color:#fff; padding:8px; }
+    #printArea td { padding:6px 8px; border-bottom:1px solid #e2e8f0; }
+    #printArea .tr { text-align:right; }
+    #printArea .big { font-size:1.2rem; font-weight:700; color:#1e40af; }
+    #printArea .close-print { position:fixed; top:10px; right:10px; background:#ef4444; color:#fff; border:none; padding:10px 16px; border-radius:8px; cursor:pointer; font-weight:600; z-index:9999; }
   </style>
 </head>
 <body>
@@ -136,6 +147,12 @@
         <button class="btn btn-success" onclick="completeSale()" style="flex:2;">✅ Complete Sale</button>
       </div>
     </section>
+  </div>
+
+  <!-- Print Area (hidden) -->
+  <div id="printArea">
+    <button class="close-print" onclick="closePrintView()">✕ Close</button>
+    <div id="printContent"></div>
   </div>
 
   <div class="modal" id="successModal" onclick="if(event.target===this) closeModal()">
@@ -281,19 +298,10 @@
 
     function closeModal(){ document.getElementById('successModal').classList.remove('show'); }
 
-    function viewBill(){
-      if(!lastSale)return;
-      const w=window.open('','_blank');
-      w.document.write(`
-        <html><head><title>Invoice #${lastSale.id}</title>
-        <style>
-          *{margin:0;padding:0}body{font-family:'Segoe UI',sans-serif;padding:20px;background:#fff;color:#1e293b}
-          .box{max-width:700px;margin:auto;border:2px solid #e2e8f0;border-radius:10px;padding:20px}
-          h2{color:#1e40af}table{width:100%;border-collapse:collapse;margin:10px 0}
-          th{background:#1e40af;color:#fff;padding:8px}td{padding:6px 8px;border-bottom:1px solid #e2e8f0}
-          .tr{text-align:right}.big{font-size:1.2rem;font-weight:700;color:#1e40af}
-        </style></head><body>
-        <div class="box">
+    function generateBillHTML() {
+      if(!lastSale)return '';
+      return `
+        <div class="invoice-box">
           <h2>🏪 Milan General Store</h2>
           <p>123, Station Road, Bolpur, Birbhum, WB - 731204</p>
           <p>GSTIN: 19ABCDE1234F1Z5 | 📞 +91 98765 43210</p>
@@ -313,15 +321,26 @@
           <hr>
           <p style="text-align:center; font-size:0.8rem; color:#64748b;">Thank you for your purchase!</p>
         </div>
-        </body></html>
-      `);
+      `;
+    }
+
+    function viewBill(){
+      if(!lastSale)return;
+      document.getElementById('printContent').innerHTML = generateBillHTML();
+      document.getElementById('printArea').style.display = 'block';
+      document.getElementById('successModal').classList.remove('show');
     }
 
     function printBill(){
       if(!lastSale)return;
-      const w=window.open('','_blank');
-      w.document.write(`<html><head><title>Invoice #${lastSale.id}</title><style>*{margin:0;padding:0}body{font-family:'Segoe UI',sans-serif;padding:20px;background:#fff;color:#1e293b}.box{max-width:700px;margin:auto;border:2px solid #e2e8f0;border-radius:10px;padding:20px}h2{color:#1e40af}table{width:100%;border-collapse:collapse;margin:10px 0}th{background:#1e40af;color:#fff;padding:8px}td{padding:6px 8px;border-bottom:1px solid #e2e8f0}.tr{text-align:right}.big{font-size:1.2rem;font-weight:700;color:#1e40af}</style></head><body><div class="box"><h2>🏪 Milan General Store</h2><p>123, Station Road, Bolpur</p><p>GSTIN: 19ABCDE1234F1Z5</p><hr><p>Invoice #${lastSale.id} | ${new Date(lastSale.date).toLocaleString()}</p><p>Payment: ${lastSale.pay_mode}</p>${lastSale.customer?.name?'<p>Customer: '+lastSale.customer.name+'</p>':''}<table><tr><th>Item</th><th>Qty</th><th>Price</th><th class="tr">Subtotal</th></tr>${lastSale.items.map(i=>`<tr><td>${i.name} ${i.variant||''}</td><td>${i.qty}</td><td>${i.price} ₹</td><td class="tr">${i.subtotal} ₹</td></tr>`).join('')}</table><p>Subtotal: ${lastSale.subtotal} ₹</p><p>Discount: -${lastSale.discount} ₹</p><p>Paid: ${lastSale.total - (lastSale.due_amount||0)} ₹</p><p>Due: ${lastSale.due_amount||0} ₹</p><p class="big">Grand Total: ${lastSale.total} ₹</p></div></body></html>`);
-      w.print();
+      document.getElementById('printContent').innerHTML = generateBillHTML();
+      document.getElementById('printArea').style.display = 'block';
+      document.getElementById('successModal').classList.remove('show');
+      setTimeout(() => { window.print(); }, 500);
+    }
+
+    function closePrintView(){
+      document.getElementById('printArea').style.display = 'none';
     }
 
     function downloadBill(){
