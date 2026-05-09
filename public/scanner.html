@@ -6,57 +6,59 @@
   <title>📷 QR Scanner | Shop Manager</title>
   <style>
     :root {
-      --bg: #f1f5f9; --surface: #ffffff; --text: #1e293b;
-      --text-muted: #64748b; --accent: #3b82f6;
+      --bg: #f8f9fa; --text: #212529; --surface: #ffffff;
+      --border: #dee2e6; --accent: #3b82f6;
     }
     body.dark {
-      --bg: #0f172a; --surface: #1e293b; --text: #e2e8f0;
-      --text-muted: #94a3b8;
+      --bg: #1a1a2e; --text: #e0e0e0; --surface: #16213e;
+      --border: #0f3460;
     }
     * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family:'Segoe UI', sans-serif; background:var(--bg); color:var(--text); min-height:100vh; transition:0.3s; }
-
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; transition: 0.3s;
+    }
     .topbar {
-      background: linear-gradient(135deg, #1e40af, #1e3a8a); color:#fff;
-      padding:14px 24px; display:flex; justify-content:space-between;
-      align-items:center; flex-wrap:wrap; gap:12px;
-      position:sticky; top:0; z-index:50;
+      background: linear-gradient(135deg, #1e40af, #1e3a8a); color: #fff;
+      padding: 14px 20px; display: flex; justify-content: space-between;
+      align-items: center; flex-wrap: wrap; gap: 10px;
+      position: sticky; top: 0; z-index: 50;
     }
-    .topbar h1 { font-size:1.3rem; }
+    .topbar h1 { font-size: 1.3rem; }
     .btn {
-      padding:8px 16px; border-radius:10px; font-weight:600; font-size:0.8rem;
-      border:none; cursor:pointer; text-decoration:none; transition:0.2s;
-      display:inline-flex; align-items:center; gap:6px;
-      background:rgba(255,255,255,0.15); color:#fff; border:1px solid rgba(255,255,255,0.3);
+      padding: 8px 16px; border-radius: 10px; font-weight: 600; font-size: 0.8rem;
+      border: none; cursor: pointer; text-decoration: none; transition: 0.2s;
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.3);
     }
-    .btn-primary { background:#38bdf8; color:#0f172a; border-color:#38bdf8; }
+    .btn:hover { background: rgba(255,255,255,0.25); }
+    .btn-primary { background: #38bdf8; color: #0f172a; border-color: #38bdf8; }
 
-    .container { max-width:600px; margin:20px auto; padding:0 20px; }
+    .container { max-width: 600px; margin: 20px auto; padding: 0 20px; }
 
-    /* Camera View */
-    #camera-container {
+    #reader {
       width: 100%; max-width: 400px; margin: 20px auto;
       border-radius: 16px; overflow: hidden;
       border: 3px solid var(--accent); box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-      background: #000;
     }
-    #camera-container video { width: 100%; display: block; }
 
     .scan-result {
       background: var(--surface); border-radius: 14px; padding: 20px;
       margin-top: 20px; text-align: center; box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+      border: 2px solid var(--border);
     }
-    .scan-result.success { border: 2px solid #10b981; }
-    .scan-result.error { border: 2px solid #ef4444; }
+    .scan-result.success { border-color: #10b981; }
+    .scan-result.error { border-color: #ef4444; }
     .scan-result h3 { margin-bottom: 6px; }
-    .scan-result p { color: var(--text-muted); margin: 4px 0; }
+    .scan-result p { color: #64748b; margin: 4px 0; }
 
     .manual-input { margin-top: 20px; display: flex; gap: 10px; }
     .manual-input input {
       flex:1; padding:12px; border:2px solid var(--border); border-radius:10px;
       background:var(--surface); color:var(--text); font-size:0.9rem;
     }
-    .log { font-size:0.75rem; color:var(--text-muted); margin-top:12px; text-align:center; }
+    .log { font-size:0.75rem; color:#64748b; margin-top:12px; text-align:center; }
   </style>
 </head>
 <body>
@@ -70,14 +72,12 @@
 </header>
 
 <div class="container">
-  <!-- Camera View -->
-  <div id="camera-container">
-    <video id="video" autoplay playsinline></video>
-  </div>
+  <!-- QR Reader -->
+  <div id="reader"></div>
 
-  <p style="text-align:center; margin-top:10px; color:var(--text-muted);">Point camera at a QR code</p>
+  <p style="text-align:center; margin-top:10px; color:#64748b;">Point camera at a QR code</p>
 
-  <!-- Manual Input (Fallback) -->
+  <!-- Manual Input Fallback -->
   <div class="manual-input">
     <input type="text" id="manualInput" placeholder="Or type product ID manually...">
     <button class="btn btn-primary" onclick="manualSearch()">🔍 Find</button>
@@ -94,79 +94,65 @@
   <p class="log" id="log"></p>
 </div>
 
-<script src="https://unpkg.com/@ericblade/quagga2@1.8.0/dist/quagga.min.js"></script>
+<!-- html5-qrcode library -->
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
 <script>
+  // ========== AUTH CHECK ==========
   const token = localStorage.getItem('token');
   if (!token) { window.location.href = 'login.html'; }
 
-  let scanning = false;
+  async function authFetch(url, options = {}) {
+    options.headers = {
+      ...options.headers,
+      'Authorization': 'Bearer ' + token
+    };
+    const res = await fetch(url, options);
+    if (res.status === 401) {
+      localStorage.removeItem('token');
+      window.location.href = 'login.html';
+    }
+    return res;
+  }
+
   const logEl = document.getElementById('log');
 
-  function log(msg) { logEl.textContent = msg; }
+  // ========== SCANNER ==========
+  const html5QrCode = new Html5Qrcode("reader");
 
-  async function startScanner() {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-      const video = document.getElementById('video');
-      video.srcObject = stream;
-      video.play();
-      log('Camera started. Scanning...');
-      startScanning();
-    } catch (err) {
-      log('❌ Camera access denied. Please allow camera permission.');
-    }
+  function onScanSuccess(decodedText, decodedResult) {
+    // Scanner stop করুন
+    html5QrCode.stop().then(() => {
+      logEl.textContent = 'Scanned: ' + decodedText;
+      processScan(decodedText);
+    }).catch(err => {
+      logEl.textContent = 'Stop error: ' + err;
+    });
   }
 
-  function startScanning() {
-    const video = document.getElementById('video');
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-
-    scanning = true;
-    function scan() {
-      if (!scanning) return;
-      if (video.readyState === video.HAVE_ENOUGH_DATA) {
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-
-        // Simple QR detection using quagga-style approach
-        // For mobile simplicity, we'll use a timer-based approach
-      }
-      if (scanning) requestAnimationFrame(scan);
-    }
-    scan();
-
-    // Use BarcodeDetector if available (Chrome 88+)
-    if ('BarcodeDetector' in window) {
-      const detector = new BarcodeDetector({ formats: ['qr_code'] });
-      async function detectLoop() {
-        if (!scanning) return;
-        try {
-          const barcodes = await detector.detect(video);
-          if (barcodes.length > 0) {
-            scanning = false;
-            const data = barcodes[0].rawValue;
-            processScan(data);
-            return;
-          }
-        } catch(e) {}
-        setTimeout(detectLoop, 500);
-      }
-      detectLoop();
-    } else {
-      log('⚠️ BarcodeDetector not supported. Use manual input below.');
-    }
+  function onScanFailure(error) {
+    // Scanning fail – silently ignore
   }
 
-  function processScan(data) {
-    log('Scanned: ' + data);
+  // Start scanner
+  html5QrCode.start(
+    { facingMode: "environment" }, // Rear camera
+    { fps: 10, qrbox: { width: 250, height: 250 } },
+    onScanSuccess,
+    onScanFailure
+  ).then(() => {
+    logEl.textContent = 'Camera started. Scanning...';
+  }).catch(err => {
+    logEl.textContent = '❌ Camera access denied. Please allow camera permission.';
+  });
+
+  // ========== PROCESS SCAN ==========
+  async function processScan(data) {
     try {
       const product = JSON.parse(data);
-      findAndAddToCart(product);
+      await findAndAddToCart(product);
     } catch (e) {
-      manualSearchById(data);
+      await manualSearchById(data);
     }
   }
 
@@ -175,9 +161,9 @@
     if (!val) return;
     try {
       const product = JSON.parse(val);
-      findAndAddToCart(product);
+      await findAndAddToCart(product);
     } catch(e) {
-      manualSearchById(val);
+      await manualSearchById(val);
     }
   }
 
@@ -187,7 +173,7 @@
       const products = await res.json();
       const product = products.find(p => p.id == id || p.name.toLowerCase().includes(id.toLowerCase()));
       if (product) {
-        findAndAddToCart(product);
+        await findAndAddToCart(product);
       } else {
         showResult(false, 'Product not found');
       }
@@ -197,7 +183,6 @@
   }
 
   async function findAndAddToCart(product) {
-    // Add to cart via bill.html's logic
     try {
       const res = await authFetch('/products');
       const products = await res.json();
@@ -216,6 +201,17 @@
       }
       localStorage.setItem('scannedCart', JSON.stringify(cart));
       showResult(true, `✅ Added to cart! (Qty: ${existing ? existing.qty : 1})`);
+
+      // ২ সেকেন্ড পর আবার স্ক্যানার চালু
+      setTimeout(() => {
+        html5QrCode.start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: { width: 250, height: 250 } },
+          onScanSuccess,
+          onScanFailure
+        ).catch(err => {});
+      }, 2000);
+
     } catch(e) {
       showResult(false, 'Error processing scan');
     }
@@ -231,22 +227,14 @@
       document.getElementById('resultVariant').textContent = '';
       document.getElementById('resultPrice').textContent = '';
     }
-    setTimeout(() => { scanning = true; }, 2000);
-  }
-
-  async function authFetch(url, opts = {}) {
-    opts.headers = { ...opts.headers, 'Authorization': 'Bearer '+token };
-    return fetch(url, opts);
   }
 
   function toggleTheme() {
     document.body.classList.toggle('dark');
     localStorage.setItem('theme', document.body.classList.contains('dark')?'dark':'light');
   }
-
   (function(){
     if (localStorage.getItem('theme')==='dark') document.body.classList.add('dark');
-    startScanner();
   })();
 </script>
 </body>
